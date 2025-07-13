@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
 import { CalendarIcon, UserIcon } from 'lucide-react'
 import PrintOrderDialog from './PrintOrderDialog'
+import { MarketplaceType } from '../../types/integration'
+import { getMarketplaceName, getMarketplaceLogo } from '../../utils/marketplace'
 
 interface Order {
   id: string
@@ -16,7 +18,7 @@ interface Order {
   total: number
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   createdAt: string
-  integrationSource: string
+  integrationSource: MarketplaceType
 }
 
 export default function Orders() {
@@ -32,7 +34,7 @@ export default function Orders() {
       total: 109.97,
       status: 'processing',
       createdAt: '2024-01-15T10:30:00.000Z',
-      integrationSource: 'Exemplo de Integração'
+      integrationSource: MarketplaceType.MERCADO_LIVRE
     },
     {
       id: 'ORD-002',
@@ -44,7 +46,7 @@ export default function Orders() {
       total: 59.97,
       status: 'shipped',
       createdAt: '2024-01-14T15:45:00.000Z',
-      integrationSource: 'Integração de Pagamento'
+      integrationSource: MarketplaceType.SHOPEE
     },
     {
       id: 'ORD-003',
@@ -57,7 +59,7 @@ export default function Orders() {
       total: 130.99,
       status: 'delivered',
       createdAt: '2024-01-13T09:20:00.000Z',
-      integrationSource: 'Exemplo de Integração'
+      integrationSource: MarketplaceType.AMAZON
     }
   ])
 
@@ -125,8 +127,14 @@ export default function Orders() {
                     </div>
                   ))}
                 </div>
-                <div className="text-xs text-gray-500 mt-2">
-                  <strong>Fonte:</strong> {order.integrationSource}
+                <div className="text-xs text-gray-500 mt-2 flex items-center gap-1">
+                  <strong>Fonte:</strong> 
+                  <img 
+                    src={getMarketplaceLogo(order.integrationSource)} 
+                    alt={getMarketplaceName(order.integrationSource)}
+                    className="w-4 h-4 object-contain"
+                  />
+                  {getMarketplaceName(order.integrationSource)}
                 </div>
               </CardContent>
               <div className="flex items-center justify-between px-4 pb-4 pt-2">

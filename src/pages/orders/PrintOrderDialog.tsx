@@ -2,6 +2,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from '../../components/ui/button'
 import { Separator } from '../../components/ui/separator'
 import { PrinterIcon, CalendarIcon, PackageIcon, UserIcon } from 'lucide-react'
+import { MarketplaceType } from '../../types/integration'
+import { getMarketplaceName, getMarketplaceLogo } from '../../utils/marketplace'
 
 interface Order {
   id: string
@@ -15,7 +17,7 @@ interface Order {
   total: number
   status: 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
   createdAt: string
-  integrationSource: string
+  integrationSource: MarketplaceType
 }
 
 interface PrintOrderDialogProps {
@@ -88,7 +90,7 @@ export default function PrintOrderDialog({ order, formatCurrency, getStatusText 
           </div>
           
           <div class="footer">
-            <p>Fonte: ${order.integrationSource}</p>
+            <p>Fonte: ${getMarketplaceName(order.integrationSource)}</p>
             <p>Impresso em: ${new Date().toLocaleString('pt-BR')}</p>
           </div>
         </body>
@@ -184,8 +186,14 @@ export default function PrintOrderDialog({ order, formatCurrency, getStatusText 
           <Separator />
 
           {/* Footer */}
-          <div className="text-sm text-gray-500">
-            <p><strong>Fonte:</strong> {order.integrationSource}</p>
+          <div className="text-sm text-gray-500 flex items-center gap-2">
+            <strong>Fonte:</strong> 
+            <img 
+              src={getMarketplaceLogo(order.integrationSource)} 
+              alt={getMarketplaceName(order.integrationSource)}
+              className="w-4 h-4 object-contain"
+            />
+            {getMarketplaceName(order.integrationSource)}
           </div>
 
           {/* Print Button */}

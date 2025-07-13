@@ -2,123 +2,189 @@ import { useState } from 'react'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import type { CreateIntegrationRequest } from '../../types/integration'
+import { MarketplaceType } from '../../types/integration'
+import { getMarketplaceOptions } from '../../utils/marketplace'
 
 interface IntegrationFormProps {
-  onSubmit: (integration: { title: string; body: Record<string, unknown> }) => void
+  onSubmit: (integration: CreateIntegrationRequest) => void
+  loading?: boolean
 }
 
-export default function IntegrationForm({ onSubmit }: IntegrationFormProps) {
-  const [title, setTitle] = useState('')
-  const [jsonBody, setJsonBody] = useState('')
-  const [isValidJson, setIsValidJson] = useState(true)
+export default function IntegrationForm({ onSubmit, loading = false }: IntegrationFormProps) {
+  const [formData, setFormData] = useState<CreateIntegrationRequest>({
+    userId: '', // This should be populated with current user ID
+    marketplaceType: MarketplaceType.MERCADO_LIVRE,
+    accessToken: '',
+    refreshToken: '',
+    sellerId: '',
+    storeName: '',
+  })
 
-  const validateJson = (jsonString: string) => {
-    try {
-      JSON.parse(jsonString)
-      return true
-    } catch {
-      return false
+  const [errors, setErrors] = useState<Partial<CreateIntegrationRequest>>({})
+
+  const marketplaceOptions = getMarketplaceOptions()
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<CreateIntegrationRequest> = {}
+
+    if (!formData.userId.trim()) {
+      newErrors.userId = 'User ID is required'
     }
-  }
-
-  const handleJsonChange = (value: string) => {
-    setJsonBody(value)
-    setIsValidJson(value === '' || validateJson(value))
-  }
-
-  const formatJson = () => {
-    if (!jsonBody.trim()) return
-    
-    try {
-      const parsed = JSON.parse(jsonBody)
-      const formatted = JSON.stringify(parsed, null, 2)
-      setJsonBody(formatted)
-      setIsValidJson(true)
-    } catch {
-      alert('Invalid JSON - cannot format')
+    if (!formData.accessToken.trim()) {
+      newErrors.accessToken = 'Access token is required'
     }
+    if (!formData.refreshToken.trim()) {
+      newErrors.refreshToken = 'Refresh token is required'
+    }
+    if (!formData.sellerId.trim()) {
+      newErrors.sellerId = 'Seller ID is required'
+    }
+    if (!formData.storeName.trim()) {
+      newErrors.storeName = 'Store name is required'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     
-    if (!title.trim()) {
-      alert('Please enter a title')
+    if (!validateForm()) {
       return
     }
 
-    if (!isValidJson) {
-      alert('Please enter valid JSON')
-      return
-    }
+    onSubmit(formData)
+  }
 
-    onSubmit({
-      title: title.trim(),
-      body: JSON.parse(jsonBody || '{}')
-    })
-    
-    // Reset form
-    setTitle('')
-    setJsonBody('')
+  const handleInputChange = (field: keyof CreateIntegrationRequest, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }))
+    }
+  }
+
+  const handleMarketplaceChange = (value: string) => {
+    setFormData(prev => ({ ...prev, marketplaceType: value as MarketplaceType }))
   }
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Nova Integração</CardTitle>
+        <CardTitle>Nova Integração de Marketplace</CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-2">
-            <label htmlFor="title" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-              Título da integração
-            </label>
-            <Input
-              type="text"
-              id="title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Digite o título da integração"
-              required
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="userId">User ID</Label>
+              <Input
+                id="userId"
+                type="text"
+                value={formData.userId}
+                onChange={(e) => handleInputChange('userId', e.target.value)}
+                placeholder="Digite o ID do usuário"
+                className={errors.userId ? 'border-red-500' : ''}
+              />
+              {errors.userId && (
+                <p className="text-red-500 text-sm">{errors.userId}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="marketplaceType">Marketplace</Label>
+              <Select
+                value={formData.marketplaceType}
+                onValueChange={handleMarketplaceChange}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o marketplace" />
+                </SelectTrigger>
+                <SelectContent>
+                  {marketplaceOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
-              <label htmlFor="jsonBody" className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                JSON Body da integração
-              </label>
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                onClick={formatJson}
-              >
-                Formatar JSON
-              </Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="accessToken">Token de Acesso</Label>
+              <Input
+                id="accessToken"
+                type="password"
+                value={formData.accessToken}
+                onChange={(e) => handleInputChange('accessToken', e.target.value)}
+                placeholder="Digite o access token"
+                className={errors.accessToken ? 'border-red-500' : ''}
+              />
+              {errors.accessToken && (
+                <p className="text-red-500 text-sm">{errors.accessToken}</p>
+              )}
             </div>
-            <textarea
-              id="jsonBody"
-              value={jsonBody}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleJsonChange(e.target.value)}
-              className={`flex min-h-[200px] w-full rounded-md border bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 font-mono ${
-                jsonBody && !isValidJson 
-                  ? 'border-destructive focus-visible:ring-destructive' 
-                  : 'border-input'
-              }`}
-              placeholder='{"key": "value", "config": {"setting": true}}'
-            />
-            {jsonBody && !isValidJson && (
-              <p className="text-destructive text-sm">Formato JSON inválido</p>
-            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="refreshToken">Token de Atualização</Label>
+              <Input
+                id="refreshToken"
+                type="password"
+                value={formData.refreshToken}
+                onChange={(e) => handleInputChange('refreshToken', e.target.value)}
+                placeholder="Digite o refresh token"
+                className={errors.refreshToken ? 'border-red-500' : ''}
+              />
+              {errors.refreshToken && (
+                <p className="text-red-500 text-sm">{errors.refreshToken}</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="sellerId">ID do Vendedor</Label>
+              <Input
+                id="sellerId"
+                type="text"
+                value={formData.sellerId}
+                onChange={(e) => handleInputChange('sellerId', e.target.value)}
+                placeholder="Digite o seller ID"
+                className={errors.sellerId ? 'border-red-500' : ''}
+              />
+              {errors.sellerId && (
+                <p className="text-red-500 text-sm">{errors.sellerId}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="storeName">Nome da Loja</Label>
+              <Input
+                id="storeName"
+                type="text"
+                value={formData.storeName}
+                onChange={(e) => handleInputChange('storeName', e.target.value)}
+                placeholder="Digite o nome da loja"
+                className={errors.storeName ? 'border-red-500' : ''}
+              />
+              {errors.storeName && (
+                <p className="text-red-500 text-sm">{errors.storeName}</p>
+              )}
+            </div>
           </div>
 
           <div className="flex justify-end">
             <Button
               type="submit"
-              disabled={!title.trim() || (jsonBody !== '' && !isValidJson)}
+              disabled={loading}
             >
-              Criar integração
+              {loading ? 'Criando...' : 'Criar Integração'}
             </Button>
           </div>
         </form>

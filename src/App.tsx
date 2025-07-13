@@ -4,21 +4,26 @@ import Integrations from './pages/integrations/Integrations'
 import Orders from './pages/orders/Orders'
 import Products from './pages/products/Products'
 import UI from './pages/ui/Ui'
+import { ToastProvider } from './components/ui/toast'
+import { ToastInitializer } from './components/ToastInitializer'
 
 function App() {
   return (
-    <Router>
-      <div className="min-h-screen bg-gray-100">
-        <Navigation />
-        <Routes>
-          <Route path="/" element={<Integrations />} />
-          <Route path="/orders" element={<Orders />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/ui" element={<UI />} />
-          <Route path="*" element={<p>Page not found</p>} />
-        </Routes>
-      </div>
-    </Router>
+    <ToastProvider>
+      <ToastInitializer />
+      <Router>
+        <div className="min-h-screen bg-gray-100">
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<Integrations />} />
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/ui" element={<UI />} />
+            <Route path="*" element={<p>Page not found</p>} />
+          </Routes>
+        </div>
+      </Router>
+    </ToastProvider>
   )
 }
 

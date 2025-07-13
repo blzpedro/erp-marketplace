@@ -13,7 +13,9 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../../compo
 import { Skeleton } from '../../components/ui/skeleton'
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '../../components/ui/sheet'
 import { MessageModal } from '../../components/MessageModal'
-import { CalendarIcon, ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
+import { Alert, AlertTitle, AlertDescription } from '../../components/ui/alert'
+import { useToastNotification } from '../../hooks/use-toast'
+import { CalendarIcon, ChevronDownIcon, ChevronRightIcon, CheckCircle, Info, AlertTriangle, AlertCircle } from 'lucide-react'
 
 export default function UI() {
   const [date, setDate] = useState<Date>()
@@ -28,6 +30,8 @@ export default function UI() {
     variant: "success",
     message: "",
   })
+  
+  const toast = useToastNotification()
 
   const showModal = (variant: "success" | "warning" | "error", title?: string, message?: string) => {
     setModalState({
@@ -246,6 +250,79 @@ export default function UI() {
             >
               Error
             </Button>
+          </div>
+        </div>
+
+        {/* Toast Notifications */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold mb-4">Toast Notifications</h3>
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              onClick={() => toast.success("Operation completed successfully!", "Success")}
+              variant="default"
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Success Toast
+            </Button>
+            <Button 
+              onClick={() => toast.info("Here's some helpful information", "Info")}
+              variant="outline"
+            >
+              <Info className="w-4 h-4 mr-2" />
+              Info Toast
+            </Button>
+            <Button 
+              onClick={() => toast.warning("Please review your input", "Warning")}
+              variant="outline"
+            >
+              <AlertTriangle className="w-4 h-4 mr-2" />
+              Warning Toast
+            </Button>
+            <Button 
+              onClick={() => toast.error("Something went wrong", "Error")}
+              variant="destructive"
+            >
+              <AlertCircle className="w-4 h-4 mr-2" />
+              Error Toast
+            </Button>
+          </div>
+        </div>
+
+        {/* Alert Components */}
+        <div className="bg-white p-6 rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold mb-4">Alert Components</h3>
+          <div className="space-y-4">
+            <Alert variant="success">
+              <CheckCircle className="h-4 w-4" />
+              <AlertTitle>Success!</AlertTitle>
+              <AlertDescription>
+                Your operation was completed successfully.
+              </AlertDescription>
+            </Alert>
+            
+            <Alert variant="info">
+              <Info className="h-4 w-4" />
+              <AlertTitle>Information</AlertTitle>
+              <AlertDescription>
+                Here's some helpful information for you.
+              </AlertDescription>
+            </Alert>
+            
+            <Alert variant="warning">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Warning</AlertTitle>
+              <AlertDescription>
+                Please review your input before proceeding.
+              </AlertDescription>
+            </Alert>
+            
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Error</AlertTitle>
+              <AlertDescription>
+                Something went wrong. Please try again.
+              </AlertDescription>
+            </Alert>
           </div>
         </div>
       </div>
